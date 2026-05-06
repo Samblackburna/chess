@@ -163,7 +163,26 @@ public class ChessPiece {
             return moves;
         }
         else if (piece.getPieceType() == PieceType.KING) {
+            Collection<ChessMove> moves = new ArrayList<>();
+            for (int row = 1; row <= 8; row++) {
+                for (int column = 1; column <= 8; column++) {
+                    int rowDiff = Math.abs(row - myPosition.getRow());
+                    int columnDiff = Math.abs(column - myPosition.getColumn());
 
+                    ChessPosition newPosition = new ChessPosition(row, column);
+                    ChessPiece target = board.getPiece(newPosition);
+                    if ((rowDiff == 0 && columnDiff == 1) || (rowDiff == 1 && columnDiff == 0) || (rowDiff == 1 && columnDiff == 1)) {
+                        if (target == null) {
+                            moves.add(new ChessMove(myPosition, newPosition, null));
+                        } else {
+                            if (target.getTeamColor() != piece.getTeamColor()) {
+                                moves.add(new ChessMove(myPosition, newPosition, null));
+                            }
+                        }
+                    }
+                }
+            }
+            return moves;
         }
         return List.of();
     }
