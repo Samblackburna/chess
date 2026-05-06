@@ -131,9 +131,11 @@ public class ChessPiece {
                         if (target.getTeamColor() != piece.getTeamColor()) {
                             moves.add(new ChessMove(myPosition, newPosition, null));
                         }
+                        break;
                     }
                 }
             }
+            return moves;
         }
         else if (piece.getPieceType() == PieceType.QUEEN) {
 
