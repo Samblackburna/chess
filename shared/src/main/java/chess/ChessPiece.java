@@ -121,8 +121,6 @@ public class ChessPiece {
 
                     if (row < 1 || row > 8 || column < 1 || column > 8) break;
 
-                    // this is a test
-                    // this is a text x2
                     ChessPosition newPosition = new ChessPosition(row, column);
                     ChessPiece target = board.getPiece(newPosition);
                     if (target == null) {
@@ -138,7 +136,31 @@ public class ChessPiece {
             return moves;
         }
         else if (piece.getPieceType() == PieceType.QUEEN) {
+            Collection<ChessMove> moves = new ArrayList<>();
+            int[][] directions = {{1,0},{0,1},{-1,0},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1}};
+            for (int[] dir : directions) {
+                int row = myPosition.getRow();
+                int column = myPosition.getColumn();
 
+                while (true) {
+                    row += dir[0];
+                    column += dir[1];
+
+                    if (row < 1 || row > 8 || column < 1 || column > 8) break;
+
+                    ChessPosition newPosition = new ChessPosition(row, column);
+                    ChessPiece target = board.getPiece(newPosition);
+                    if (target == null) {
+                        moves.add(new ChessMove(myPosition, newPosition, null));
+                    } else {
+                        if (target.getTeamColor() != piece.getTeamColor()) {
+                            moves.add(new ChessMove(myPosition, newPosition, null));
+                        }
+                        break;
+                    }
+                }
+            }
+            return moves;
         }
         else if (piece.getPieceType() == PieceType.KING) {
 
