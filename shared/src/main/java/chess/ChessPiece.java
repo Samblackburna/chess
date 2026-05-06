@@ -121,6 +121,7 @@ public class ChessPiece {
 
                     if (row < 1 || row > 8 || column < 1 || column > 8) break;
 
+                    // this is a test
                     ChessPosition newPosition = new ChessPosition(row, column);
                     ChessPiece target = board.getPiece(newPosition);
                     if (target == null) {
