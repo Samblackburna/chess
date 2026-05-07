@@ -84,7 +84,25 @@ public class ChessPiece {
             return moves;
             // return List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(1, 8), null));
         } else if (piece.getPieceType() == PieceType.PAWN) {
+            Collection<ChessMove> moves = new ArrayList<>();
+            int row = myPosition.getRow();
+            int column = myPosition.getColumn();
+            int direction;
+            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                direction = 1;} else {direction = -1;}
+            int startrow;
+            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                startrow = 2;} else {startrow = 7;}
 
+            ChessPosition oneForward = new ChessPosition(row + direction, column);
+            ChessPosition twoForward = new ChessPosition(row + direction + direction, column);
+            if (board.getPiece(oneForward) == null) {
+                moves.add(new ChessMove(myPosition, oneForward, null));
+            }
+
+            if (row == startrow) {
+                moves.add(new ChessMove(myPosition, twoForward, null));
+            }
         }
         else if (piece.getPieceType() == PieceType.KNIGHT) {
             Collection<ChessMove> moves = new ArrayList<>();
