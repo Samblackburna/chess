@@ -99,6 +99,7 @@ public class ChessPiece {
                 promotionRow = 1;
             }
 
+            // just normal movement code
             ChessPosition oneForward = new ChessPosition(row + direction, column);
             if (board.getPiece(oneForward) == null) {
                 if (row + direction == promotionRow) {
@@ -109,7 +110,7 @@ public class ChessPiece {
                 } else {
                     moves.add(new ChessMove(myPosition, oneForward, null));
                 }
-                
+
                 if (row == startRow) {
                     ChessPosition twoForward = new ChessPosition(row + direction * 2, column);
                     if (board.getPiece(twoForward) == null) {
@@ -118,6 +119,7 @@ public class ChessPiece {
                 }
             }
 
+            // diagonal capture code block
             int[] captureColumns = {column - 1, column + 1};
             for (int captureCol : captureColumns) {
                 if (captureCol < 1 || captureCol > 8) continue;
