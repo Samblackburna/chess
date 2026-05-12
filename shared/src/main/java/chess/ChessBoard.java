@@ -3,6 +3,8 @@ package chess;
 import java.util.Arrays;
 import java.util.Objects;
 
+// trying to figure out how to move project 1 over
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
