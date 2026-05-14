@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -50,7 +51,26 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = myBoard.getPiece(startPosition);
+        if (piece == null) {
+            return null;
+        }
+
+        Collection<ChessMove> moves = piece.pieceMoves(myBoard, startPosition);
+        Collection<ChessMove> legalMoves = new ArrayList<>();
+
+        for (ChessMove move : moves) {
+            ChessPiece captured = myBoard.getPiece(move.getEndPosition());
+
+            myBoard.addPiece(move.getEndPosition(), piece);
+            myBoard.addPiece(move.getStartPosition(), null);
+
+            if (!isInCheck(piece.getTeamColor())) {
+                legalMoves.add(move);
+            }
+        }
+
+        return legalMoves;
     }
     /*
     /**
@@ -60,7 +80,28 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        ChessPiece piece = myBoard.getPiece(move.getStartPosition());
 
+        if (piece == null) {
+            throw new InvalidMoveException("No piece at StartPosition");
+        }
+        if (piece.getTeamColor() != currentTeam) {
+            throw new InvalidMoveException("It is not your turn");
+        }
+
+        if (move.getPromotionPiece() != null) {
+            piece = new ChessPiece(currentTeam, move.getPromotionPiece());
+        }
+
+        myBoard.addPiece(move.getEndPosition(), piece);
+        myBoard.addPiece(move.getStartPosition(), null);
+
+        // switch teams
+        if (currentTeam == TeamColor.WHITE) {
+            currentTeam = TeamColor.BLACK;
+        } else {
+            currentTeam = TeamColor.WHITE;
+        }
     }
 
     /**
