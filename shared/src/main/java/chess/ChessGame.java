@@ -68,6 +68,10 @@ public class ChessGame {
             if (!isInCheck(piece.getTeamColor())) {
                 legalMoves.add(move);
             }
+            // I need to undo this change rather than making it permanant
+            myBoard.addPiece(move.getStartPosition(), piece);
+            myBoard.addPiece(move.getEndPosition(), captured);
+
         }
 
         return legalMoves;
@@ -165,7 +169,7 @@ public class ChessGame {
                     }
                 }
             }
-            return true;
+            return false;
         }
     }
 
