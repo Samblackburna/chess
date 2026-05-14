@@ -15,7 +15,9 @@ public class ChessGame {
     private ChessBoard myBoard;
 
     public ChessGame() {
-
+        this.myBoard = new ChessBoard();
+        this.myBoard.resetBoard();
+        this.currentTeam = TeamColor.WHITE;
     }
 
     /**
@@ -76,13 +78,14 @@ public class ChessGame {
 
         return legalMoves;
     }
-    /*
+
     /**
      * Makes a move in the chess game
      *
      * @param move chess move to perform
      * @throws InvalidMoveException if move is invalid
      */
+
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = myBoard.getPiece(move.getStartPosition());
 
@@ -146,7 +149,7 @@ public class ChessGame {
             }
         }
 
-        return true;
+        return false;
     }
 
     /**
@@ -169,7 +172,7 @@ public class ChessGame {
                     }
                 }
             }
-            return false;
+            return true;
         }
     }
 
