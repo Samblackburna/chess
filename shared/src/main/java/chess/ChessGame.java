@@ -89,6 +89,9 @@ public class ChessGame {
             throw new InvalidMoveException("It is not your turn");
         }
 
+        Collection<ChessMove> legal = validMoves(move.getStartPosition());
+        if (legal == null || !legal.contains(move)) throw new InvalidMoveException("Move not legal");
+
         if (move.getPromotionPiece() != null) {
             piece = new ChessPiece(currentTeam, move.getPromotionPiece());
         }
