@@ -10,6 +10,7 @@ import java.util.Objects;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
+// What is going on with unit 2
 public class ChessGame {
 
     private TeamColor currentTeam;
