@@ -64,18 +64,17 @@ public class ChessPiece {
             int row = myPosition.getRow();
             int column = myPosition.getColumn();
             int direction;
-            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                direction = 1;} else {direction = -1;}
             int startRow;
-            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                startRow = 2;} else {startRow = 7;}
             int promotionRow;
             if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                promotionRow = 8;} else {
+                direction = 1;
+                startRow = 2;
+                promotionRow = 8;
+            } else {
+                direction = -1;
+                startRow = 7;
                 promotionRow = 1;
             }
-
-            // just normal movement code
             ChessPosition oneForward = new ChessPosition(row + direction, column);
             if (board.getPiece(oneForward) == null) {
                 if (row + direction == promotionRow) {
