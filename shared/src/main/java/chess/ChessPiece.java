@@ -66,12 +66,10 @@ public class ChessPiece {
             int direction;
             int startRow;
             int promotionRow;
-            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                direction = 1;
+            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) { direction = 1;
                 startRow = 2;
                 promotionRow = 8;
-            } else {
-                direction = -1;
+            } else { direction = -1;
                 startRow = 7;
                 promotionRow = 1;
             }
