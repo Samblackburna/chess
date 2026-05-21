@@ -95,7 +95,9 @@ public class ChessPiece {
             // diagonal capture code block
             int[] captureColumns = {column - 1, column + 1};
             for (int captureCol : captureColumns) {
-                if (captureCol < 1 || captureCol > 8) continue;
+                if (captureCol < 1 || captureCol > 8) {
+                    continue;
+                }
                 ChessPosition diagonal = new ChessPosition(row + direction, captureCol);
                 ChessPiece target = board.getPiece(diagonal);
                 if (target != null && target.getTeamColor() != piece.getTeamColor()) {
@@ -114,17 +116,13 @@ public class ChessPiece {
                 for (int column = 1; column <= 8; column++) {
                     int rowDiff = Math.abs(row - myPosition.getRow());
                     int columnDiff = Math.abs(column - myPosition.getColumn());
-
                     ChessPosition newPosition = new ChessPosition(row, column);
                     ChessPiece target = board.getPiece(newPosition);
-                    if ((rowDiff == 2 && columnDiff == 1) || (rowDiff == 1 && columnDiff == 2)) {
-                        if (target == null) {
-                            moves.add(new ChessMove(myPosition, newPosition, null));
-                        } else {
-                            if (target.getTeamColor() != piece.getTeamColor()) {
-                                moves.add(new ChessMove(myPosition, newPosition, null));
-                            }
-                        }
+                    if (!((rowDiff == 2 && columnDiff == 1) || (rowDiff == 1 && columnDiff == 2))) {
+                        continue;
+                    }
+                    if (isValidTarget(piece, target)) {
+                        moves.add(new ChessMove(myPosition, newPosition, null));
                     }
                 }
             }
@@ -144,17 +142,13 @@ public class ChessPiece {
                 for (int column = 1; column <= 8; column++) {
                     int rowDiff = Math.abs(row - myPosition.getRow());
                     int columnDiff = Math.abs(column - myPosition.getColumn());
-
                     ChessPosition newPosition = new ChessPosition(row, column);
                     ChessPiece target = board.getPiece(newPosition);
-                    if ((rowDiff == 0 && columnDiff == 1) || (rowDiff == 1 && columnDiff == 0) || (rowDiff == 1 && columnDiff == 1)) {
-                        if (target == null) {
-                            moves.add(new ChessMove(myPosition, newPosition, null));
-                        } else {
-                            if (target.getTeamColor() != piece.getTeamColor()) {
-                                moves.add(new ChessMove(myPosition, newPosition, null));
-                            }
-                        }
+                    if (!((rowDiff == 0 && columnDiff == 1) || (rowDiff == 1 && columnDiff == 0) || (rowDiff == 1 && columnDiff == 1))) {
+                        continue;
+                    }
+                    if (isValidTarget(piece, target)) {
+                        moves.add(new ChessMove(myPosition, newPosition, null));
                     }
                 }
             }
@@ -172,7 +166,9 @@ public class ChessPiece {
             while (true) {
                 row += dir[0];
                 column += dir[1];
-                if (row < 1 || row > 8 || column < 1 || column > 8) break;
+                if (row < 1 || row > 8 || column < 1 || column > 8) {
+                    break;
+                }
                 ChessPosition newPosition = new ChessPosition(row, column);
                 ChessPiece target = board.getPiece(newPosition);
                 if (target == null) {
@@ -186,6 +182,10 @@ public class ChessPiece {
             }
         }
         return moves;
+    }
+
+    private boolean isValidTarget(ChessPiece mover, ChessPiece target) {
+        return target == null || target.getTeamColor() != mover.getTeamColor();
     }
 
     private void addPromotionMoves(Collection<ChessMove> moves, ChessPosition from, ChessPosition to) {
