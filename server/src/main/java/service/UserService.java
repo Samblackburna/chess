@@ -22,10 +22,10 @@ public class UserService {
 
     public RegisterResult register(RegisterRequest req) throws DataAccessException {
         if (req.username() == null || req.password() == null || req.email() == null) {
-            throw new BadRequestException("bad request");
+            throw new BadRequestException("Error: bad request");
         }
         if (dataAccess.getUser(req.username()) != null) {
-            throw new AlreadyTakenException("already taken");
+            throw new AlreadyTakenException("Error: already taken");
         }
 
         dataAccess.createUser(new UserData(req.username(), req.password(), req.email()));
@@ -37,7 +37,7 @@ public class UserService {
 
     public LoginResult login(LoginRequest req) throws DataAccessException {
         if (req.username() == null || req.password() == null) {
-            throw new BadRequestException("bad request");
+            throw new BadRequestException("Error: bad request");
         }
         UserData user = dataAccess.getUser(req.username());
         if (user == null || !user.password().equals(req.password())) {
@@ -51,7 +51,7 @@ public class UserService {
 
     public void logout(String authToken) throws DataAccessException {
         if (dataAccess.getAuth(authToken) == null) {
-            throw new UnauthorizedException("bad request");
+            throw new UnauthorizedException("Error: unauthorized");
         }
         dataAccess.deleteAuth(authToken);
     }
