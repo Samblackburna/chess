@@ -15,8 +15,8 @@ public class UserService {
 
 
     public record RegisterRequest(String username, String password, String email) {}
-    // public record LoginRequest(String username, String password) {}
-    // public record LoginResult(String username, String authToken) {}
+    public record LoginRequest(String username, String password) {}
+    public record LoginResult(String username, String authToken) {}
 
 
 
@@ -34,6 +34,26 @@ public class UserService {
         dataAccess.createAuth(new AuthData(token, req.username()));
         return new RegisterResult(req.username(), token);
     }
-    
+
+    public LoginResult login(LoginRequest req) throws DataAccessException {
+        if (req.username() == null || req.password() == null) {
+            throw new BadRequestException("bad request");
+        }
+        UserData user = dataAccess.getUser(req.username());
+        if (user == null || !user.password().equals(req.password())) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+        
+        String token = UUID.randomUUID().toString();
+        dataAccess.createAuth(new AuthData(token, req.username()));
+        return new LoginResult(req.username(), token);
+    }
+
+    public void logout(String authToken) throws DataAccessException {
+        if (dataAccess.getAuth(authToken) == null) {
+            throw new UnauthorizedException("bad request");
+        }
+        dataAccess.deleteAuth(authToken);
+    }
 
 }
