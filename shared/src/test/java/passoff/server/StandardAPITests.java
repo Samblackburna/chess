@@ -1,1 +1,3 @@
-// StandardAPITests has been moved to server/src/test/java/passoff/server/StandardAPITests.java
+package passoff.server;
+
+public class StandardAPITests {}
