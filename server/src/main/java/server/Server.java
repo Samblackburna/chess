@@ -24,6 +24,26 @@ public class Server {
         clearService = new ClearService(dataAccess);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        /* javalin exception handling. 
+        app.exception(BadRequestResponse.class, (e, ctx) -> {
+        ctx.json("Bad request: ${e.message}.").status(400)
+        });
+        (see SO)
+        */
+
+        javalin.exception(BadRequestException.class, (e, ctx) -> error(ctx, 400, e.getMessage()));
+        javalin.exception(UnauthorizedException.class, (e, ctx) -> error(ctx, 401, e.getMessage()));
+        javalin.exception(AlreadyTakenException.class, (e, ctx) -> error(ctx, 403, e.getMessage()));
+
+        javalin.exception(Exception.class, (e, ctx) -> error(ctx, 500, "Error: " + e.getMessage()));
+
+
+        javalin.post("/user",      this::register);
+        javalin.post("/session",   this::login);
+        javalin.delete("/session", this::logout);
+        javalin.get("/game",       this::listGames);
+        javalin.post("/game",      this::createGame);
+        javalin.put("/game",       this::joinGame);
     }
 
     // in starter code. DO NOT ALTER
