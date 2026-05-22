@@ -37,7 +37,7 @@ public class Server {
 
         javalin.exception(Exception.class, (e, ctx) -> error(ctx, 500, "Error: " + e.getMessage()));
 
-
+        javalin.delete("/db",      this::clear);
         javalin.post("/user",      this::register);
         javalin.post("/session",   this::login);
         javalin.delete("/session", this::logout);
