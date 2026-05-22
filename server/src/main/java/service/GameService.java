@@ -20,7 +20,7 @@ public class GameService {
         if (dataAccess.getAuth(authToken) == null) {
             throw new UnauthorizedException("Error: unauthorized");
         }
-        return dataAccess();
+        return dataAccess.listGames();
     }
 
     public CreateGameResult createGame(CreateGameRequest req, String authToken) throws DataAccessException {
@@ -40,7 +40,9 @@ public class GameService {
         if (auth == null) {
             throw new UnauthorizedException("Error: unauthorized");
         }
-
+        if (req.gameID() == null) {
+            throw new BadRequestException("bad request");
+        }
         GameData game = dataAccess.getGame(req.gameID());
         if (game == null) {
             throw new BadRequestException("bad request");
@@ -67,8 +69,7 @@ public class GameService {
             if (game.blackUsername() != null) {
                 throw new AlreadyTakenException("already taken");
             }
-
-            updatedGame = new GameData(game.gameID(), game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
+            updatedGame = new GameData(game.gameID(), game.whiteUsername(), auth.username(), game.gameName(), game.game());
         }
         dataAccess.updateGame(updatedGame);
     }
