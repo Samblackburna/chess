@@ -5,6 +5,7 @@ import java.util.*;
 import java.sql.*;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class MySQLDataAccess implements DataAccess {
 
@@ -88,11 +89,30 @@ public class MySQLDataAccess implements DataAccess {
     }
 
     public void createUser(UserData user) throws DataAccessException {
-        throw new DataAccessException("not implemented");
+        var hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        executeUpdate("INSERT INTO users (username, password, email) VALUES (?, ?, ?)",
+                user.username(), hashedPassword, user.email());
     }
 
     public UserData getUser(String username) throws DataAccessException {
-        throw new DataAccessException("not implemented");
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username, password, email FROM users WHERE username=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return new UserData(
+                                rs.getString("username"),
+                                rs.getString("password"),
+                                rs.getString("email")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to get user: " + e.getMessage());
+        }
+        return null;
     }
 
     public int createGame(GameData game) throws DataAccessException {
