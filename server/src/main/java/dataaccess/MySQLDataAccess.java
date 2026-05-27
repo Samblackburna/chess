@@ -25,6 +25,9 @@ public class MySQLDataAccess implements DataAccess {
                     else if (param instanceof Integer p) {
                         ps.setInt(i + 1, p);
                     }
+                    else if (param == null) {
+                        ps.setNull(i + 1, NULL);
+                    }
                 }
 
                 ps.executeUpdate();
@@ -50,6 +53,21 @@ public class MySQLDataAccess implements DataAccess {
                     email VARCHAR(256) NOT NULL
                 ) 
                 """,
+                """
+                CREATE TABLE IF NOT EXISTS auth_tokens (
+                    auth_token VARCHAR(256) PRIMARY KEY,
+                    username VARCHAR(256) NOT NULL
+                )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS games (
+                    game_id        INT AUTO_INCREMENT PRIMARY KEY,
+                    white_username VARCHAR(256),
+                    black_username VARCHAR(256),
+                    game_name      VARCHAR(256) NOT NULL,
+                    game           TEXT         NOT NULL
+                )
+                """
         };
 
         try (var conn = DatabaseManager.getConnection()) {
@@ -64,7 +82,9 @@ public class MySQLDataAccess implements DataAccess {
     }
 
     public void clear() throws DataAccessException {
-        throw new DataAccessException("not implemented");
+        executeUpdate("DELETE FROM auth_tokens");
+        executeUpdate("DELETE FROM games");
+        executeUpdate("DELETE FROM users");
     }
 
     public void createUser(UserData user) throws DataAccessException {

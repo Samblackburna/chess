@@ -11,17 +11,22 @@ import java.util.Map;
 public class Server {
 
     private final Javalin javalin;
-    private final DataAccess MySQLdataAccess;
+    private final DataAccess dataAccess;
     private final UserService userService;
     private final GameService gameService;
     private final ClearService clearService;
     private static final Gson GSON = new Gson(); // this will eventually connect to JSON library
 
     public Server() {
-        MySQLdataAccess = new MemoryDataAccess();
-        userService = new UserService(MySQLdataAccess);
-        gameService = new GameService(MySQLdataAccess);
-        clearService = new ClearService(MySQLdataAccess);
+        try {
+            dataAccess = new MySQLDataAccess();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        // MySQLdataAccess = new MemoryDataAccess()
+        userService = new UserService(dataAccess);
+        gameService = new GameService(dataAccess);
+        clearService = new ClearService(dataAccess);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         /* javalin exception handling. 
