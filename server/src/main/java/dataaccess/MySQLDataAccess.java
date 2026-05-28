@@ -6,6 +6,8 @@ import java.sql.*;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 import org.mindrot.jbcrypt.BCrypt;
+import com.google.gson.Gson;
+import chess.ChessGame;
 
 public class MySQLDataAccess implements DataAccess {
 
@@ -43,6 +45,16 @@ public class MySQLDataAccess implements DataAccess {
         catch (SQLException e) {
             throw new DataAccessException("Database update failed: " + e.getMessage());
         }
+    }
+
+    // another helper function
+    private GameData readGame(ResultSet rs) throws SQLException {
+        var gameID = rs.getInt("game_id");
+        var whiteUsername = rs.getString("white_username");
+        var blackUsername = rs.getString("black_username");
+        var gameName = rs.getString("game_name");
+        var game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
+        return new GameData(gameID, whiteUsername, blackUsername, gameName, game);
     }
 
     private void configureDatabase() throws DataAccessException {
@@ -116,19 +128,54 @@ public class MySQLDataAccess implements DataAccess {
     }
 
     public int createGame(GameData game) throws DataAccessException {
-        throw new DataAccessException("not implemented");
+        var json = new Gson().toJson(game.game());
+        return executeUpdate(
+                "INSERT INTO games (white_username, black_username, game_name, game) VALUES (?, ?, ?, ?)",
+                game.whiteUsername(), game.blackUsername(), game.gameName(), json);
     }
 
     public GameData getGame(int gameID) throws DataAccessException {
-        throw new DataAccessException("not implemented");
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT game_id, white_username, black_username, game_name, game FROM games WHERE game_id=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, gameID);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readGame(rs);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to get game: " + e.getMessage());
+        }
+        return null;
     }
 
     public Collection<GameData> listGames() throws DataAccessException {
-        throw new DataAccessException("not implemented");
+        var games = new ArrayList<GameData>();
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT game_id, white_username, black_username, game_name, game FROM games";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        games.add(readGame(rs));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to list games: " + e.getMessage());
+        }
+        return games;
     }
 
     public void updateGame(GameData game) throws DataAccessException {
-        throw new DataAccessException("not implemented");
+        var json = new Gson().toJson(game.game());
+        var rowsAffected = executeUpdate(
+                "UPDATE games SET white_username=?, black_username=?, game_name=?, game=? WHERE game_id=?",
+                game.whiteUsername(), game.blackUsername(), game.gameName(), json, game.gameID());
+        if (rowsAffected == 0) {
+            throw new DataAccessException("Game not found: " + game.gameID());
+        }
     }
 
     public void createAuth(AuthData auth) throws DataAccessException {

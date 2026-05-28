@@ -4,6 +4,12 @@ import model.*;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import org.mindrot.jbcrypt.BCrypt;
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
+import model.GameData;
+import chess.InvalidMoveException;
+import java.util.Collection;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MySQLDataAccessTest {
@@ -33,6 +39,7 @@ public class MySQLDataAccessTest {
         dataAccess.createUser(new UserData("sam", "password", "sam@email.com"));
         var user = dataAccess.getUser("sam");
         assertNotNull(user);
+        // assert equals code
         assertEquals("sam", user.username());
         assertEquals("sam@email.com", user.email());
     }
@@ -109,4 +116,72 @@ public class MySQLDataAccessTest {
         assertThrows(DataAccessException.class, () ->
                 dataAccess.deleteAuth("doesnotexist"));
     }
+
+    @Test
+    @DisplayName("createGame: positive")
+    void createGameSuccess() throws DataAccessException {
+        int id = dataAccess.createGame(new GameData(0, null, null, "Test Game", new ChessGame()));
+        assertTrue(id > 0);
+    }
+
+    @Test
+    @DisplayName("createGame: negative - duplicate game name")
+    void createGameDuplicate() throws DataAccessException {
+        dataAccess.createGame(new GameData(0, null, null, "Test Game", new ChessGame()));
+        dataAccess.createGame(new GameData(0, null, null, "Test Game", new ChessGame()));
+        assertEquals(2, dataAccess.listGames().size());
+    }
+
+    @Test
+    @DisplayName("getGame: positive")
+    void getGameSuccess() throws DataAccessException {
+        int id = dataAccess.createGame(new GameData(0, null, null, "Test Game", new ChessGame()));
+        var game = dataAccess.getGame(id);
+        assertNotNull(game);
+        assertEquals("Test Game", game.gameName());
+    }
+
+
+    @Test
+    @DisplayName("getGame: negative - nonexistent game")
+    void getGameNotFound() throws DataAccessException {
+        assertNull(dataAccess.getGame(99999));
+    }
+
+    @Test
+    @DisplayName("listGames: positive")
+    void listGamesSuccess() throws DataAccessException {
+        dataAccess.createGame(new GameData(0, null, null, "Game 1", new ChessGame()));
+        dataAccess.createGame(new GameData(0, null, null, "Game 2", new ChessGame()));
+        // mirrored assert equals code
+        assertEquals(2, dataAccess.listGames().size());
+    }
+
+    @Test
+    @DisplayName("listGames: negative - empty list")
+    void listGamesEmpty() throws DataAccessException {
+        assertEquals(0, dataAccess.listGames().size());
+    }
+
+    @Test
+    @DisplayName("updateGame: positive - board state persists")
+    void updateGameSuccess() throws DataAccessException, InvalidMoveException {
+        int id = dataAccess.createGame(new GameData(0, null, null, "Test Game", new ChessGame()));
+        var gameData = dataAccess.getGame(id);
+
+        gameData.game().makeMove(new ChessMove(new ChessPosition(2, 1), new ChessPosition(3, 1), null));
+        dataAccess.updateGame(gameData);
+        var updated = dataAccess.getGame(id);
+        assertEquals(gameData.game(), updated.game());
+    }
+
+
+    @Test
+    @DisplayName("updateGame: negative - nonexistent game")
+    void updateGameNotFound() {
+        assertThrows(DataAccessException.class, () ->
+                dataAccess.updateGame(new GameData(99999, null, null, "Ghost", new ChessGame())));
+
+    }
+
 }
