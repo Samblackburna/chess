@@ -31,13 +31,13 @@ public class MySQLDataAccess implements DataAccess {
                     }
                 }
 
-                ps.executeUpdate();
+                int rowsAffected = ps.executeUpdate();
 
                 var rs = ps.getGeneratedKeys();
                 if (rs.next()) {
                     return rs.getInt(1);
                 }
-                return 0;
+                return rowsAffected;
             }
         }
         catch (SQLException e) {
@@ -132,14 +132,37 @@ public class MySQLDataAccess implements DataAccess {
     }
 
     public void createAuth(AuthData auth) throws DataAccessException {
-        throw new DataAccessException("not implemented");
+        executeUpdate("INSERT INTO auth_tokens (auth_token, username) VALUES (?, ?)",
+                auth.authToken(), auth.username());
     }
 
     public AuthData getAuth(String authToken) throws DataAccessException {
-        throw new DataAccessException("not implemented");
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT auth_token, username FROM auth_tokens WHERE auth_token=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return new AuthData(
+                                rs.getString("auth_token"),
+                                rs.getString("username")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to get auth: " + e.getMessage());
+        }
+        return null;
     }
 
     public void deleteAuth(String authToken) throws DataAccessException {
-        throw new DataAccessException("not implemented");
+        var rowsAffected = executeUpdate("DELETE FROM auth_tokens WHERE auth_token=?", authToken);
+
+
+        // error response
+        if (rowsAffected == 0) {
+            throw new DataAccessException("Auth token not found");
+        }
     }
 }

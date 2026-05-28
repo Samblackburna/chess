@@ -63,4 +63,50 @@ public class MySQLDataAccessTest {
         assertNull(dataAccess.getUser("nobody"));
     }
 
+    @Test
+    @DisplayName("createAuth: positive")
+    void createAuthSuccess() throws DataAccessException {
+        dataAccess.createAuth(new AuthData("token123", "sam"));
+        assertNotNull(dataAccess.getAuth("token123"));
+    }
+
+    @Test
+    @DisplayName("createAuth: negative - duplicate token")
+    void createAuthDuplicate() {
+        assertThrows(DataAccessException.class, () -> {
+            dataAccess.createAuth(new AuthData("token123", "sam"));
+            dataAccess.createAuth(new AuthData("token123", "other"));
+        });
+    }
+
+    @Test
+    @DisplayName("getAuth: positive")
+    void getAuthSuccess() throws DataAccessException {
+        dataAccess.createAuth(new AuthData("token123", "sam"));
+        var auth = dataAccess.getAuth("token123");
+        assertEquals("token123", auth.authToken());
+        assertEquals("sam", auth.username());
+    }
+
+    @Test
+    @DisplayName("getAuth: negative - nonexistent token")
+    void getAuthNotFound() throws DataAccessException {
+        assertNull(dataAccess.getAuth("doesnotexist"));
+    }
+
+
+    @Test
+    @DisplayName("deleteAuth: positive")
+    void deleteAuthSuccess() throws DataAccessException {
+        dataAccess.createAuth(new AuthData("token123", "sam"));
+        dataAccess.deleteAuth("token123");
+        assertNull(dataAccess.getAuth("token123"));
+    }
+
+    @Test
+    @DisplayName("deleteAuth: negative - nonexistent token")
+    void deleteAuthNotFound() {
+        assertThrows(DataAccessException.class, () ->
+                dataAccess.deleteAuth("doesnotexist"));
+    }
 }
