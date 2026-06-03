@@ -76,6 +76,12 @@ public class ServerFacade {
         handleResponse(response, null);
     }
 
+    public void clearDatabase() throws Exception {
+        var request = buildRequest("DELETE", "/db", null, null);
+        var response = sendRequest(request);
+        handleResponse(response, null);
+    }
+
     private record GameListResult(Collection<GameData> games) {}
 
     // just HTTP helpers
