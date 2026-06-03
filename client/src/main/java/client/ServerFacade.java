@@ -58,7 +58,8 @@ public class ServerFacade {
         var body = Map.of("gameName", gameName);
         var request = buildRequest("POST", "/game", body, authToken);
         var response = sendRequest(request);
-        handleResponse(response, null);
+        var result = handleResponse(response, Map.class);
+        return ((Double) result.get("gameID")).intValue();
     }
 
     public Collection<GameData> listGames(String authToken) throws Exception {
