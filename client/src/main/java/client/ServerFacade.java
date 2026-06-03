@@ -38,17 +38,13 @@ public class ServerFacade {
         return handleResponse(response, AuthData.class);
     }
 
-/*
-    public AuthData login(String username, String password) throw exception {
 
+    public AuthData login(String username, String password) throws Exception {
+        var body = Map.of("username", username, "password", password);
+        var request = buildRequest("POST", "/session", body, null);
+        var response = sendRequest(request);
+        return handleResponse(response, AuthData.class);
     }
-
-    public void logout(authTokem) {
-
-    }
-
-    public
-*/
 
     // just HTTP helpers
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {

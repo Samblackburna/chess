@@ -1,19 +1,20 @@
 package client;
 
-import java.util.Arrays;
+import model.AuthData;
+
 import java.util.Scanner;
 
 public class Repl {
 
     private final ServerFacade server;
+    private State state = State.SIGNEDOUT;
 
     public Repl(int port) {
         server = new ServerFacade(port);
     }
 
-
     public void run() {
-        System.out.println("Welcome to Chess. Type 'help' to get started");
+        System.out.println("Welcome to Chess. Type 'help' to get started.");
 
         var prelogin = new PreloginClient(server);
 
@@ -28,16 +29,26 @@ public class Repl {
                 String[] tokens = line.toLowerCase().split("\\s+");
 
                 if (tokens[0].equals("quit")) {
-                    System.out.println("Goodbye");
+                    System.out.println("Goodbye!");
                     return;
                 }
 
-                String result = prelogin.eval(tokens);
-                System.out.println(result);
+                if (state == State.SIGNEDOUT) {
+                    AuthData auth = prelogin.eval(tokens);
+                    if (auth != null) {
+                        state = State.SIGNEDIN;
+                        // postlogin will be handled here in the next step
+                    }
+                }
             }
         }
     }
+
     private void printPrompt() {
-        System.out.print("[LOGGED_OUT] >>> ");
+        if (state == State.SIGNEDOUT) {
+            System.out.print("[LOGGED_OUT] >>> ");
+        } else {
+            System.out.print("[LOGGED_IN] >>> ");
+        }
     }
 }

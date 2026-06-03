@@ -1,11 +1,12 @@
 /*
-According to Single Responsibility Principle: we're breaking out
+According to Single Responsibility Principle: we're breaking out Petshop's PetClient code into a bunch of different classes
  */
 
 package client;
 
+import model.AuthData;
+
 import java.util.Arrays;
-import java.util.Scanner;
 
 public class PreloginClient {
 
@@ -15,35 +16,48 @@ public class PreloginClient {
         this.server = server;
     }
 
-    public String eval(String[] tokens) {
+    // Returns AuthData on successful login/register, null otherwise.
+    // Repl uses the return value to detect when to transition to postlogin.
+    public AuthData eval(String[] tokens) {
         String cmd = tokens.length > 0 ? tokens[0] : "help";
         String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
-        return switch (cmd) {
-            case "register" -> register(params);
-            case "login" -> login(params);
-            case "help" -> help();
-            default -> "Unknown command. Type 'help' for options.";
-        };
+        switch (cmd) {
+            case "register" -> { return register(params); }
+            case "login"    -> { return login(params); }
+            case "help"     -> System.out.println(help());
+            default         -> System.out.println("Unknown command. Type 'help' for options.");
+        }
+        return null;
     }
 
-    private String register(String[] params) {
+    private AuthData register(String[] params) {
         if (params.length < 3) {
-            return "Expected: register <username> <password> <email>";
+            System.out.println("Expected: register <username> <password> <email>");
+            return null;
         }
         try {
             var auth = server.register(params[0], params[1], params[2]);
-            return String.format("Registered and logged in as %s.", auth.username());
+            System.out.println("Registered and logged in as " + auth.username() + ".");
+            return auth;
         } catch (Exception e) {
-            // return null;
-            return "Error: " + e.getMessage();
-
+            System.out.println("Error: " + e.getMessage());
+            return null;
         }
     }
 
-
-
-    private String login(String[] params) {
-        return "not implemented.";
+    private AuthData login(String[] params) {
+        if (params.length < 2) {
+            System.out.println("Expected: login <username> <password>");
+            return null;
+        }
+        try {
+            var auth = server.login(params[0], params[1]);
+            System.out.println("Logged in as " + auth.username() + ".");
+            return auth;
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     public String help() {
