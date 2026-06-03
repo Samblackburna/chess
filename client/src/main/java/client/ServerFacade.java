@@ -38,6 +38,7 @@ public class ServerFacade {
         return handleResponse(response, AuthData.class);
     }
 
+/*
     public AuthData login(String username, String password) throw exception {
 
     }
@@ -47,6 +48,7 @@ public class ServerFacade {
     }
 
     public
+*/
 
     // just HTTP helpers
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
