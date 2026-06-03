@@ -37,9 +37,24 @@ public class Repl {
                     AuthData auth = prelogin.eval(tokens);
                     if (auth != null) {
                         state = State.SIGNEDIN;
-                        // postlogin will be handled here in the next step
+                        var postlogin = new PostloginClient(server, auth);
+                        while (state == State.SIGNEDIN) {
+                            printPrompt();
+                            String postLine = scanner.nextLine().trim();
+                            if (postLine.isBlank()) { continue; }
+                            String[] postTokens = postLine.toLowerCase().split("\\s+");
+
+                            if (postTokens[0].equals("quit")) {
+                                System.out.println("Goodbye!");
+                                return;
+                            }
+                            if (postlogin.eval(postTokens)) {
+                                state = State.SIGNEDOUT;
+                            }
+                        }
                     }
                 }
+
             }
         }
     }
