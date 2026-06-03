@@ -107,4 +107,24 @@ public class ServerFacadeTests {
                 facade.joinGame(auth2.authToken(), gameID, "WHITE"));
     }
 
+
+
+
+    // listGames
+    @Test
+    void listGamesSuccess() throws Exception {
+        var auth = facade.register("sam", "password", "sam@email.com");
+        facade.createGame(auth.authToken(), "game one");
+        facade.createGame(auth.authToken(), "game two");
+        var games = facade.listGames(auth.authToken());
+        Assertions.assertEquals(2, games.size());
+    }
+
+    @Test
+    void listGamesUnauthorized() {
+        Assertions.assertThrows(Exception.class, () ->
+                facade.listGames("bad token"));
+    }
+
+
 }
