@@ -24,13 +24,13 @@ public class PostloginClient {
         String cmd = tokens.length > 0 ? tokens[0] : "help";
         String[] params = java.util.Arrays.copyOfRange(tokens, 1, tokens.length);
         switch (cmd) {
-            case "logout"      -> { return logout(); }
-            case "create"      -> createGame(params);
-            case "List"        -> listGames();
-            case "join"        -> joinGame(params);
-            // case "observe"     -> observeGame(params); implement later
-            case "help"        -> System.out.println(help());
-            default            -> System.out.println("Unknown command. Type 'help' for options.");
+            case "logout"  -> { return logout(); }
+            case "create"  -> createGame(params);
+            case "list"    -> listGames();
+            case "join"    -> joinGame(params);
+            case "observe" -> observeGame(params);
+            case "help"    -> System.out.println(help());
+            default        -> System.out.println("Unknown command. Type 'help' for options.");
         }
         return false;
     }
@@ -102,14 +102,31 @@ public class PostloginClient {
         }
     }
 
-    // don't forget obeserve later
+    private void observeGame(String[] params) {
+        if (params.length < 1) {
+            System.out.println("Expected: observe <game number>");
+            return;
+        }
+        try {
+            int ind = Integer.parseInt(params[0]) - 1;
+            if (ind < 0 || ind >= lastGameList.size()) {
+                System.out.println("Invalid game number. Use 'list' to see available games.");
+                return;
+            }
+            System.out.println("Observing game " + (ind + 1) + ".");
+        } catch (NumberFormatException e) {
+            System.out.println("Game number must be a number.");
+        }
+    }
+
     public String help() {
         return """
-                  create <name>                  - create a new game
-                  list                           - list all games
-                  join <game number> <WHITE|BLACK> - join a game
-                  logout                         - log out of your account
-                  help                           - list available commands
+                  create <name>                    - create a new game
+                  list                             - list all games
+                  join <game number> <WHITE|BLACK>  - join a game
+                  observe <game number>             - observe a game
+                  logout                           - log out of your account
+                  help                             - list available commands
                 """;
     }
 }
