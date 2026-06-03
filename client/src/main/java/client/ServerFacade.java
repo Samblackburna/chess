@@ -2,12 +2,14 @@ package client;
 
 import com.google.gson.Gson;
 import model.AuthData;
+import model.GameData;
 
 import java.net.URI;
 import java.net.http.*;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Collection;
 import java.util.Map;
 
 /* see shared/src/main/server/ServerFacade.java in Petshop files for analogous code */
@@ -51,6 +53,29 @@ public class ServerFacade {
         var response = sendRequest(request);
         handleResponse(response, null);
     }
+
+    public int createGame(String authToken, String gameName) throws Exception {
+        var body = Map.of("gameName", gameName);
+        var request = buildRequest("POST", "/game", body, authToken);
+        var response = sendRequest(request);
+        handleResponse(response, null);
+    }
+
+    public Collection<GameData> listGames(String authToken) throws Exception {
+        var request = buildRequest("GET", "/game", null, authToken);
+        var response = sendRequest(request);
+        var result = handleResponse(response, GameListResult.class);
+        return result.games();
+    }
+
+    public void joinGame(String authToken, int gameID, String playerColor) throws Exception {
+        var body = Map.of("gameID", gameID, "playerColor", playerColor);
+        var request = buildRequest("PUT", "/game", body, authToken);
+        var response = sendRequest(request);
+        handleResponse(response, null);
+    }
+
+    private record GameListResult(Collection<GameData> games) {}
 
     // just HTTP helpers
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
