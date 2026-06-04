@@ -21,17 +21,8 @@ public class ServerFacade {
     private static final Gson GSON = new Gson();
 
     public ServerFacade(int port) {
-        // serverUrl = url;
         serverUrl = "http://localhost:" + port;
     }
-
-    /* standard form:
-        method
-        path
-        body shape
-        auth token presence
-        return type
-     */
 
     public AuthData register(String username, String password, String email) throws Exception {
         var body = Map.of("username", username, "password", password, "email", email);
@@ -112,17 +103,7 @@ public class ServerFacade {
     }
 
     private <T> T handleResponse(HttpResponse<String> response, Class<T> responseClass) throws Exception {
-        /* var status = response.statusCode();
-        if (!isSuccessful(status)) {
-            var body = response.body();
-            if (body != null) {
-                throw ResponseException.fromJson(body);
-            }
-
-            throw new ResponseException(ResponseException.fromHttpStatusCode(status), "other failure: " + status); */
-
         if (response.statusCode() != 200) {
-            // GSON.fromJson(response.body(), Map.class);
             var error = GSON.fromJson(response.body(), Map.class);
             throw new Exception((String) error.get("message"));
         }

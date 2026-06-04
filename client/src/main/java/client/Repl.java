@@ -37,24 +37,29 @@ public class Repl {
                     AuthData auth = prelogin.eval(tokens);
                     if (auth != null) {
                         state = State.SIGNEDIN;
-                        var postlogin = new PostloginClient(server, auth);
-                        while (state == State.SIGNEDIN) {
-                            printPrompt();
-                            String postLine = scanner.nextLine().trim();
-                            if (postLine.isBlank()) { continue; }
-                            String[] postTokens = postLine.toLowerCase().split("\\s+");
-
-                            if (postTokens[0].equals("quit")) {
-                                System.out.println("Goodbye!");
-                                return;
-                            }
-                            if (postlogin.eval(postTokens)) {
-                                state = State.SIGNEDOUT;
-                            }
-                        }
+                        runPostlogin(scanner, auth);
                     }
                 }
 
+            }
+        }
+    }
+
+    private void runPostlogin(Scanner scanner, AuthData auth) {
+        var postlogin = new PostloginClient(server, auth);
+        while (state == State.SIGNEDIN) {
+            printPrompt();
+            String line = scanner.nextLine().trim();
+            if (line.isBlank()) {
+                continue;
+            }
+            String[] tokens = line.toLowerCase().split("\\s+");
+            if (tokens[0].equals("quit")) {
+                System.out.println("Goodbye!");
+                System.exit(0);
+            }
+            if (postlogin.eval(tokens)) {
+                state = State.SIGNEDOUT;
             }
         }
     }

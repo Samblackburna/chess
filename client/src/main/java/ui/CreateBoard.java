@@ -9,7 +9,7 @@ import static ui.EscapeSequences.*;
 
 public class CreateBoard {
     public void draw(ChessBoard board, ChessGame.TeamColor viewSide) {
-        int StartRow;
+        int startRow;
         int endRow;
         int rowDirection;
         int startCol;
@@ -17,14 +17,14 @@ public class CreateBoard {
         int colDirection;
 
         if (viewSide == ChessGame.TeamColor.WHITE) {
-            StartRow = 8;
+            startRow = 8;
             endRow = 0;
             rowDirection = -1;
             startCol = 1;
             endCol = 9;
             colDirection = 1;
         } else {
-            StartRow = 1;
+            startRow = 1;
             endRow = 9;
             rowDirection = 1;
             startCol = 8;
@@ -34,7 +34,7 @@ public class CreateBoard {
 
         printColHeaders(startCol, endCol, colDirection);
 
-        for (int row = StartRow; row != endRow; row += rowDirection) {
+        for (int row = startRow; row != endRow; row += rowDirection) {
             System.out.print(RESET_BG_COLOR + " " + row + " ");
             for (int col = startCol; col != endCol; col += colDirection) {
                 boolean lightSquare = (row + col) % 2 == 0;
