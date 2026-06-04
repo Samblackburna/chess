@@ -1,7 +1,10 @@
 package client;
 
+import chess.ChessBoard;
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
+import ui.CreateBoard;
 
 import java.util.ArrayList;
 import java.util.Collection;
