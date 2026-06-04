@@ -40,9 +40,9 @@ public class CreateBoard {
                 boolean lightSquare = (row + col) % 2 == 0;
                 String bg;
                 if (lightSquare) {
-                    bg = SET_BG_COLOR_LIGHT_GREY;
-                } else {
                     bg = SET_BG_COLOR_DARK_GREY;
+                } else {
+                    bg = SET_BG_COLOR_LIGHT_GREY;
                 }
                 System.out.print(bg + getPieceString(board, row, col));
             }

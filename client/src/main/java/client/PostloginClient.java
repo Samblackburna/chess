@@ -57,6 +57,7 @@ public class PostloginClient {
         try {
             String gameName = String.join(" ", params);
             server.createGame(auth.authToken(), gameName);
+            lastGameList = new ArrayList<>(server.listGames(auth.authToken()));
             System.out.println("Game '" + gameName + "' created");
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
@@ -90,6 +91,10 @@ public class PostloginClient {
         try {
             if (lastGameList.isEmpty()) {
                 lastGameList = new ArrayList<>(server.listGames(auth.authToken()));
+            }
+            if (params[0].equalsIgnoreCase("WHITE") || params[0].equalsIgnoreCase("BLACK")) {
+                System.out.println("Wrong order: expected game number before color");
+                return;
             }
             int ind = Integer.parseInt(params[0]) - 1;
             if (ind < 0 || ind >= lastGameList.size()) {
