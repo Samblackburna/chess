@@ -88,6 +88,9 @@ public class PostloginClient {
             return;
         }
         try {
+            if (lastGameList.isEmpty()) {
+                lastGameList = new ArrayList<>(server.listGames(auth.authToken()));
+            }
             int ind = Integer.parseInt(params[0]) - 1;
             if (ind < 0 || ind >= lastGameList.size()) {
                 System.out.println("Invalid game number. Use list to see available games.");
@@ -116,6 +119,9 @@ public class PostloginClient {
             return;
         }
         try {
+            if (lastGameList.isEmpty()) {
+                lastGameList = new ArrayList<>(server.listGames(auth.authToken()));
+            }
             int ind = Integer.parseInt(params[0]) - 1;
             if (ind < 0 || ind >= lastGameList.size()) {
                 System.out.println("Invalid game number. Use 'list' to see available games.");
@@ -127,6 +133,8 @@ public class PostloginClient {
             new CreateBoard().draw(board, ChessGame.TeamColor.WHITE);
         } catch (NumberFormatException e) {
             System.out.println("Game number must be a number.");
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
