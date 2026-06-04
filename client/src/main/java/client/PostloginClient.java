@@ -100,6 +100,11 @@ public class PostloginClient {
             int gameID = lastGameList.get(ind).gameID();
             server.joinGame(auth.authToken(), gameID, color);
             System.out.println("Joined game as " + color);
+            ChessBoard board = new ChessBoard();
+            board.resetBoard();
+            ChessGame.TeamColor perspective = color.equals("BLACK")
+                    ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            new CreateBoard().draw(board, perspective);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -117,6 +122,9 @@ public class PostloginClient {
                 return;
             }
             System.out.println("Observing game " + (ind + 1) + ".");
+            ChessBoard board = new ChessBoard();
+            board.resetBoard();
+            new CreateBoard().draw(board, ChessGame.TeamColor.WHITE);
         } catch (NumberFormatException e) {
             System.out.println("Game number must be a number.");
         }

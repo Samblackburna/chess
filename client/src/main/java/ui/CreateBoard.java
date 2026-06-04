@@ -46,7 +46,7 @@ public class CreateBoard {
                 }
                 System.out.print(bg + getPieceString(board, row, col));
             }
-            System.out.println(RESET_BG_COLOR + " " + row + " ");
+            System.out.println(RESET_BG_COLOR + RESET_TEXT_COLOR + " " + row + " ");
         }
 
         printColHeaders(startCol, endCol, colDirection);
@@ -54,7 +54,7 @@ public class CreateBoard {
     }
 
     private void printColHeaders(int colStart, int colEnd, int colStep) {
-        System.out.print(RESET_BG_COLOR + "   ");
+        System.out.print(RESET_BG_COLOR + RESET_TEXT_COLOR + "   ");
         for (int col = colStart; col != colEnd; col += colStep) {
             System.out.print(" " + (char)('a' + col - 1) + " ");
         }
