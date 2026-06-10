@@ -2,6 +2,8 @@ package server.websocket;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
+import io.javalin.Javalin;
+import io.javalin.http.Context;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
 import io.javalin.websocket.WsConnectContext;
@@ -12,6 +14,7 @@ import model.AuthData;
 import model.GameData;
 import websocket.commands.UserGameCommand;
 import websocket.messages.LoadGameMessage;
+// import websocket
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 

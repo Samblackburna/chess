@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import dataaccess.*;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import server.websocket.WebSocketHandler;
 import service.*;
 
 import java.util.Map;
@@ -15,6 +16,7 @@ public class Server {
     private final UserService userService;
     private final GameService gameService;
     private final ClearService clearService;
+    private final WebSocketHandler wsHandler;
     private static final Gson GSON = new Gson(); // this will eventually connect to JSON library
 
     public Server() {
@@ -27,6 +29,7 @@ public class Server {
         userService = new UserService(dataAccess);
         gameService = new GameService(dataAccess);
         clearService = new ClearService(dataAccess);
+        wsHandler = new WebSocketHandler(dataAccess);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         /* javalin exception handling. 
@@ -41,6 +44,12 @@ public class Server {
         javalin.exception(AlreadyTakenException.class, (e, ctx) -> error(ctx, 403, e.getMessage()));
 
         javalin.exception(Exception.class, (e, ctx) -> error(ctx, 500, "Error: " + e.getMessage()));
+
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(wsHandler);
+            ws.onMessage(wsHandler);
+            ws.onClose(wsHandler);
+        });
 
         javalin.delete("/db",      this::clear);
         javalin.post("/user",      this::register);
