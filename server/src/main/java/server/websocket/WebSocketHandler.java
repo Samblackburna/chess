@@ -49,10 +49,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         AuthData auth = dataAccess.getAuth(command.getAuthToken());
         if (auth == null) {
             sendError(ctx.session, "invalid auth token");
+            return;
         }
         GameData game = dataAccess.getGame(command.getGameID());
         if (game == null) {
             sendError(ctx.session, "game not found");
+            return;
         }
 
         connections.add(command.getGameID(), auth.username(), ctx.session);
@@ -62,21 +64,21 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         String notificationText;
         if (auth.username().equals(game.whiteUsername())) {
-            notificationText = auth.username() + "WHITE";
+            notificationText = auth.username() + " added to WHITE";
         } else if (auth.username().equals(game.blackUsername())) {
-            notificationText = auth.username() + "BLACK";
+            notificationText = auth.username() + " added to BLACK";
         } else {
-            notificationText = auth.username() + "observer";
+            notificationText = auth.username() + " is an observer";
         }
         String notificationJson = GSON.toJson(new NotificationMessage(notificationText));
         connections.broadcastExcluding(command.getGameID(), auth.username(), notificationJson);
     }
 
-
     private void sendError(Session session, String message) throws Exception {
         String json = GSON.toJson(new ErrorMessage(message));
         session.getRemote().sendString(json);
     }
+
 
     private void makeMove(WsMessageContext ctx, UserGameCommand command) throws Exception {
     }
