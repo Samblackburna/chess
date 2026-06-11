@@ -45,18 +45,91 @@ public class GameplayClient implements ServerMessageHandler {
         String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
         try {
             switch (cmd) {
-                case "help" -> System.out.println(help());
-                case "redraw" -> redraw();
-                // case "leave"     -> { leave(); return true; }
-                // case "move"      -> move(params);
-                // case "resign"    -> resign();
-                // case "highlight" -> highlight(params);
+                case "help"      -> System.out.println(help());
+                case "redraw"    -> redraw();
+                case "leave"     -> { leave(); return true; }
+                case "move"      -> move(params);
+                case "resign"    -> resign();
+                case "highlight" -> highlight(params);
                 default -> System.out.println("Unknown command. Type 'help' for options.");
             }
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
         return false;
+    }
+
+    private void leave() throws Exception {
+        ws.sendLeave(authToken, gameID);
+    }
+
+    private void move(String[] params) throws Exception {
+        if (params.length < 2) {
+            System.out.println("Expected: move <from> <to> [promotion]  e.g. move e2 e4");
+            return;
+        }
+        ChessPosition from = parsePosition(params[0]);
+        ChessPosition to = parsePosition(params[1]);
+        ChessPiece.PieceType promotion = null;
+        if (params.length >= 3) {
+            promotion = parsePromotion(params[2]);
+        }
+        ws.sendMove(authToken, gameID, new ChessMove(from, to, promotion));
+    }
+
+    private void resign() throws Exception {
+        System.out.print("Are you sure you want to resign? (yes/no): ");
+        String answer = scanner.nextLine().trim().toLowerCase();
+        if (answer.equals("yes")) {
+            ws.sendResign(authToken, gameID);
+        } else if (answer.equals("no")) {
+            System.out.println("Resign cancelled.");
+        } else {
+            System.out.println("Resign cancelled.");
+        }
+    }
+
+    private void highlight(String[] params) {
+        if (params.length < 1) {
+            System.out.println("Expected: highlight <position>  e.g. highlight e2");
+            return;
+        }
+        if (currentGame == null) {
+            System.out.println("No game loaded yet.");
+            return;
+        }
+        ChessPosition pos = parsePosition(params[0]);
+        Collection<ChessMove> moves = currentGame.validMoves(pos);
+        Set<ChessPosition> targets = new HashSet<>();
+        if (moves != null) {
+            for (ChessMove m : moves) {
+                targets.add(m.getEndPosition());
+            }
+        }
+        new CreateBoard().drawWithHighlights(currentGame.getBoard(), perspective, pos, targets);
+    }
+
+    private ChessPosition parsePosition(String s) {
+        if (s.length() != 2) {
+            throw new IllegalArgumentException("Invalid position '" + s + "'. Use format like e2.");
+        }
+        int col = s.charAt(0) - 'a' + 1;
+        int row = s.charAt(1) - '0';
+        if (col < 1 || col > 8 || row < 1 || row > 8) {
+            throw new IllegalArgumentException("Position out of bounds: " + s);
+        }
+        return new ChessPosition(row, col);
+    }
+
+    private ChessPiece.PieceType parsePromotion(String s) {
+        return switch (s.toLowerCase()) {
+            case "queen",  "q" -> ChessPiece.PieceType.QUEEN;
+            case "rook",   "r" -> ChessPiece.PieceType.ROOK;
+            case "bishop", "b" -> ChessPiece.PieceType.BISHOP;
+            case "knight", "n" -> ChessPiece.PieceType.KNIGHT;
+            default -> throw new IllegalArgumentException(
+                    "Invalid promotion '" + s + "'. Use queen, rook, bishop, or knight.");
+        };
     }
 
 
