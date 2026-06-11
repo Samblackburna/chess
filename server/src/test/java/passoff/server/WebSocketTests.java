@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 
 import static websocket.messages.ServerMessage.ServerMessageType.*;
 
+// I hope this is allowed, I couldn't get the tests to run without these imports.
+import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
+
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class WebSocketTests {
     private static WebsocketTestingEnvironment environment;
