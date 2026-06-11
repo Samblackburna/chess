@@ -106,7 +106,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             dataAccess.updateGame(updated);
         }
 
-        String notificationJson = GSON.toJson(new NotificationMessage("left game"));
+        connections.remove(auth.username());
+
+        String notificationJson = GSON.toJson(new NotificationMessage(auth.username() + " left game"));
         connections.broadcast(command.getGameID(), notificationJson);
     }
 
