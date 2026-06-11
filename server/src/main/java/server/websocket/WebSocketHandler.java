@@ -10,6 +10,9 @@ import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
 import model.AuthData;
 import model.GameData;
+import chess.ChessGame;
+import chess.InvalidMoveException;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.LoadGameMessage;
 // for new methods
@@ -81,6 +84,66 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
 
     private void makeMove(WsMessageContext ctx, UserGameCommand command) throws Exception {
+        AuthData auth = dataAccess.getAuth(command.getAuthToken());
+        if (auth == null) {
+            sendError(ctx.session, "Error: invalid auth token");
+            return;
+        }
+
+        GameData gameData = dataAccess.getGame(command.getGameID());
+        if (gameData == null) {
+            sendError(ctx.session, "game not found");
+            return;
+        }
+
+        ChessGame game = gameData.game();
+
+        if (game.isGameOver()) {
+            sendError(ctx.session, "game already over");
+            return;
+        }
+
+        boolean isWhiteTurn = game.getTeamTurn() == ChessGame.TeamColor.WHITE;
+        boolean isCorrectPlayer = (isWhiteTurn && auth.username().equals(gameData.whiteUsername()))
+                || (!isWhiteTurn && auth.username().equals(gameData.blackUsername()));
+
+        if (!isCorrectPlayer) {
+            sendError(ctx.session, "it is not your turn");
+            return;
+        }
+
+        MakeMoveCommand moveCommand = GSON.fromJson(ctx.message(), MakeMoveCommand.class);
+        try {
+            game.makeMove(moveCommand.getMove());
+        } catch (InvalidMoveException e) {}
+
+        // actual move blck
+        dataAccess.updateGame(gameData);
+
+        String loadGameJson = GSON.toJson(new LoadGameMessage(game));
+        connections.broadcast(command.getGameID(), loadGameJson);
+
+        String moveNotification = auth.username() + " moved " + moveCommand.getMove();
+        connections.broadcastExcluding(command.getGameID(), auth.username(),
+                GSON.toJson(new NotificationMessage(moveNotification)));
+        //
+
+
+        ChessGame.TeamColor nextTeam = game.getTeamTurn();
+        if (game.isInCheckmate(nextTeam)) {
+            game.setGameOver(true);
+            dataAccess.updateGame(gameData);
+            connections.broadcast(command.getGameID(),
+                    GSON.toJson(new NotificationMessage(nextTeam + " is in checkmate. Game over!")));
+        } else if (game.isInStalemate(nextTeam)) {
+            game.setGameOver(true);
+            dataAccess.updateGame(gameData);
+            connections.broadcast(command.getGameID(),
+                    GSON.toJson(new NotificationMessage("Stalemate. Game over!")));
+        } else if (game.isInCheck(nextTeam)) {
+            connections.broadcast(command.getGameID(),
+                    GSON.toJson(new NotificationMessage(nextTeam + " is in check!")));
+        }
     }
 
     private void leave(WsMessageContext ctx, UserGameCommand command) throws Exception {
