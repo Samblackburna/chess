@@ -15,8 +15,7 @@ import websocket.commands.UserGameCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
-import websocket.messages.NotificationMessage;
-import websocket.messages.ErrorMessage;
+
 
 import chess.ChessMove;
 import chess.ChessGame;
@@ -32,10 +31,12 @@ public class WebSocketFrontend extends Endpoint {
 
     public WebSocketFrontend(String serverUrl, ServerMessageHandler messageHandler) throws Exception {
         this.messageHandler = messageHandler;
-        URI uri = new URI(serverUrl.replace("http", "ws") + "/ws");
+        URI uri = new
+                URI(serverUrl.replace("http", "ws") + "/ws");
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         this.session = container.connectToServer(this, uri);
         this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+
             @Override
             public void onMessage(String json) {
                 ServerMessage base = GSON.fromJson(json, ServerMessage.class);
@@ -49,27 +50,27 @@ public class WebSocketFrontend extends Endpoint {
         });
     }
 
-    public void Move(string authToken, int gameID) throws exception {
-        AuthData auth = dataAccess.getAuth(command.getAuthToken());
-
-        if (game.isGameOver()) {
-            return;
-        }
-
-        boolean isWhiteTurn = game.getTeamTurn() == ChessGame.TeamColor.WHITE;
-        boolean isCorrectPlayer = (isWhiteTurn && auth.username().equals(gameData.whiteUsername()))
-                || (!isWhiteTurn && auth.username().equals(gameData.blackUsername()));
-
-        if (!isCorrectPlayer) {
-            return;
-        }
-
-        MakeMoveCommand moveCommand = GSON.fromJson(ctx.message(), MakeMoveCommand.class);
-        try {
-            game.makeMove(moveCommand.getMove());
-        } catch (InvalidMoveException e) {
-            return;
-        }
+    @Override
+    public void onOpen(Session session, EndpointConfig config) {
     }
 
+    public void sendConnect(String authToken, int gameID) throws Exception {
+        send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID));
+    }
+
+    public void sendMove(String authToken, int gameID, ChessMove move) throws Exception {
+        send(new MakeMoveCommand(authToken, gameID, move));
+    }
+
+    public void sendLeave(String authToken, int gameID) throws Exception {
+        send(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID));
+    }
+
+    public void sendResign(String authToken, int gameID) throws Exception {
+        send(new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID));
+    }
+
+    private void send(Object command) throws Exception {
+        this.session.getBasicRemote().sendText(GSON.toJson(command));
+    }
 }
