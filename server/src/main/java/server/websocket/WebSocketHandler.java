@@ -2,8 +2,6 @@ package server.websocket;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
-import io.javalin.Javalin;
-import io.javalin.http.Context;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
 import io.javalin.websocket.WsConnectContext;
@@ -14,7 +12,10 @@ import model.AuthData;
 import model.GameData;
 import websocket.commands.UserGameCommand;
 import websocket.messages.LoadGameMessage;
-// import websocket
+// for new methods
+import websocket.messages.NotificationMessage;
+import websocket.messages.ErrorMessage;
+import org.eclipse.jetty.websocket.api.Session;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
@@ -46,13 +47,35 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void connect(WsMessageContext ctx, UserGameCommand command) throws Exception {
         AuthData auth = dataAccess.getAuth(command.getAuthToken());
+        if (auth == null) {
+            sendError(ctx.session, "invalid auth token");
+        }
         GameData game = dataAccess.getGame(command.getGameID());
+        if (game == null) {
+            sendError(ctx.session, "game not found");
+        }
 
         connections.add(command.getGameID(), auth.username(), ctx.session);
 
         String loadGameJson = GSON.toJson(new LoadGameMessage(game.game()));
         connections.sendToUser(auth.username(), loadGameJson);
 
+        String notificationText;
+        if (auth.username().equals(game.whiteUsername())) {
+            notificationText = auth.username() + "WHITE";
+        } else if (auth.username().equals(game.blackUsername())) {
+            notificationText = auth.username() + "BLACK";
+        } else {
+            notificationText = auth.username() + "observer";
+        }
+        String notificationJson = GSON.toJson(new NotificationMessage(notificationText));
+        connections.broadcastExcluding(command.getGameID(), auth.username(), notificationJson);
+    }
+
+
+    private void sendError(Session session, String message) throws Exception {
+        String json = GSON.toJson(new ErrorMessage(message));
+        session.getRemote().sendString(json);
     }
 
     private void makeMove(WsMessageContext ctx, UserGameCommand command) throws Exception {
