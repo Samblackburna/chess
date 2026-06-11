@@ -46,7 +46,7 @@ public class Repl {
     }
 
     private void runPostlogin(Scanner scanner, AuthData auth) {
-        var postlogin = new PostloginClient(server, auth);
+        var postlogin = new PostloginClient(server, auth, server.getServerUrl(), scanner);
         while (state == State.SIGNEDIN) {
             printPrompt();
             String line = scanner.nextLine().trim();
@@ -60,6 +60,30 @@ public class Repl {
             }
             if (postlogin.eval(tokens)) {
                 state = State.SIGNEDOUT;
+            } else {
+                GameplayClient game = postlogin.getPendingGame();
+                if (game != null) {
+                    runGameplay(scanner, game);
+                }
+            }
+        }
+    }
+
+    private void runGameplay(Scanner scanner, GameplayClient game) {
+        state = State.INGAME;
+        while (state == State.INGAME) {
+            game.printPrompt();
+            String line = scanner.nextLine().trim();
+            if (line.isBlank()) {
+                continue;
+            }
+            String[] tokens = line.toLowerCase().split("\\s+");
+            if (tokens[0].equals("quit")) {
+                System.out.println("Goodbye!");
+                System.exit(0);
+            }
+            if (game.eval(tokens)) {
+                state = State.SIGNEDIN;
             }
         }
     }

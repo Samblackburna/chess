@@ -20,6 +20,8 @@ public class ServerFacade {
     private final String serverUrl;
     private static final Gson GSON = new Gson();
 
+    public String getServerUrl() { return serverUrl; }
+
     public ServerFacade(int port) {
         serverUrl = "http://localhost:" + port;
     }

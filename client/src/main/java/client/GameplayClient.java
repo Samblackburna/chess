@@ -24,13 +24,17 @@ public class GameplayClient implements ServerMessageHandler {
     private final Scanner scanner;
     private volatile ChessGame currentGame;
 
-    public GameplayClient(WebSocketFrontend ws, String authToken, int gameID,
-                          ChessGame.TeamColor perspective, Scanner scanner) {
-        this.ws = ws;
+    public GameplayClient(String serverUrl, String authToken, int gameID,
+                          ChessGame.TeamColor perspective, Scanner scanner) throws Exception {
+        this.ws = new WebSocketFrontend(serverUrl, this);
         this.authToken = authToken;
         this.gameID = gameID;
         this.perspective = perspective;
         this.scanner = scanner;
+    }
+
+    public void sendConnect() throws Exception {
+        ws.sendConnect(authToken, gameID);
     }
 
 

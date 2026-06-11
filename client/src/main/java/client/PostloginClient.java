@@ -1,25 +1,34 @@
 package client;
 
-import chess.ChessBoard;
 import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
-import ui.CreateBoard;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Scanner;
 
 public class PostloginClient {
 
     private final ServerFacade server;
     private final AuthData auth;
-    // this is
+    private final String serverUrl;
+    private final Scanner scanner;
+    private GameplayClient pendingGame;
     private List<GameData> lastGameList = new ArrayList<>();
 
-    public PostloginClient(ServerFacade server, AuthData auth) {
+    public PostloginClient(ServerFacade server, AuthData auth, String serverUrl, Scanner scanner) {
         this.server = server;
         this.auth = auth;
+        this.serverUrl = serverUrl;
+        this.scanner = scanner;
+    }
+
+    public GameplayClient getPendingGame() {
+        GameplayClient game = pendingGame;
+        pendingGame = null;
+        return game;
     }
 
     // Returns true if the user logged out
@@ -107,12 +116,10 @@ public class PostloginClient {
             String color = params[1].toUpperCase();
             int gameID = lastGameList.get(ind).gameID();
             server.joinGame(auth.authToken(), gameID, color);
-            System.out.println("Joined game as " + color);
-            ChessBoard board = new ChessBoard();
-            board.resetBoard();
             ChessGame.TeamColor perspective = color.equals("BLACK")
                     ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
-            new CreateBoard().draw(board, perspective);
+            pendingGame = new GameplayClient(serverUrl, auth.authToken(), gameID, perspective, scanner);
+            pendingGame.sendConnect();
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -132,10 +139,9 @@ public class PostloginClient {
                 System.out.println("Invalid game number. Use 'list' to see available games.");
                 return;
             }
-            System.out.println("Observing game " + (ind + 1) + ".");
-            ChessBoard board = new ChessBoard();
-            board.resetBoard();
-            new CreateBoard().draw(board, ChessGame.TeamColor.WHITE);
+            int gameID = lastGameList.get(ind).gameID();
+            pendingGame = new GameplayClient(serverUrl, auth.authToken(), gameID, ChessGame.TeamColor.WHITE, scanner);
+            pendingGame.sendConnect();
         } catch (NumberFormatException e) {
             System.out.println("Game number must be a number.");
         } catch (Exception e) {
