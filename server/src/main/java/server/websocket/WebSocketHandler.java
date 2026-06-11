@@ -84,6 +84,30 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void leave(WsMessageContext ctx, UserGameCommand command) throws Exception {
+        // see connections above for reference
+        AuthData auth = dataAccess.getAuth(command.getAuthToken());
+        if (auth == null) {
+            sendError(ctx.session, "invalid auth token");
+            return;
+        }
+        GameData game = dataAccess.getGame(command.getGameID());
+        if (game == null) {
+            sendError(ctx.session, "Error: game not found");
+            return;
+        }
+
+
+        if (auth.username().equals(game.whiteUsername())) {
+            GameData updated = new GameData(game.gameID(), null, game.blackUsername(), game.gameName(), game.game());
+            dataAccess.updateGame(updated);
+
+        } else if (auth.username().equals(game.blackUsername())) {
+            GameData updated = new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(), game.game());
+            dataAccess.updateGame(updated);
+        }
+
+        String notificationJson = GSON.toJson(new NotificationMessage("left game"));
+        connections.broadcast(command.getGameID(), notificationJson);
     }
 
     private void resign(WsMessageContext ctx, UserGameCommand command) throws Exception {
