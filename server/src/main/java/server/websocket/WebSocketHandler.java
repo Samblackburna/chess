@@ -115,9 +115,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         MakeMoveCommand moveCommand = GSON.fromJson(ctx.message(), MakeMoveCommand.class);
         try {
             game.makeMove(moveCommand.getMove());
-        } catch (InvalidMoveException e) {}
-
-        // actual move blck
+        } catch (InvalidMoveException e) {
+            // needed to pass Make Invalid Move Test
+            sendError(ctx.session, "Error: " + e.getMessage());
+            return;
+        }
         dataAccess.updateGame(gameData);
 
         String loadGameJson = GSON.toJson(new LoadGameMessage(game));
@@ -176,6 +178,35 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void resign(WsMessageContext ctx, UserGameCommand command) throws Exception {
+        AuthData auth = dataAccess.getAuth(command.getAuthToken());
+        if (auth == null) {
+            sendError(ctx.session, "invalid auth token");
+            return;
+        }
+        GameData gameData = dataAccess.getGame(command.getGameID());
+        if (gameData == null) {
+            sendError(ctx.session, "game not found");
+            return;
+        }
+
+        boolean isPlayer = auth.username().equals(gameData.whiteUsername())
+                || auth.username().equals(gameData.blackUsername());
+        if (!isPlayer) {
+            sendError(ctx.session, "observers cannot resign");
+            return;
+        }
+
+        if (gameData.game().isGameOver()) {
+            sendError(ctx.session, "game already over");
+            return;
+        }
+
+        gameData.game().setGameOver(true);
+        dataAccess.updateGame(gameData);
+
+        String notificationJson = GSON.toJson(new NotificationMessage(auth.username() + " resigned. Game over"));
+        connections.broadcast(command.getGameID(), notificationJson);
+
     }
 }
 
