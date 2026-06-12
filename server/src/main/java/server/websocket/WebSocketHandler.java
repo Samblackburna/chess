@@ -20,6 +20,8 @@ import websocket.messages.NotificationMessage;
 import websocket.messages.ErrorMessage;
 import org.eclipse.jetty.websocket.api.Session;
 
+import java.time.Duration;
+
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final DataAccess dataAccess;
@@ -30,7 +32,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         this.dataAccess = dataAccess;
     }
 
+    // I'm timing out, so we're trying this
     public void handleConnect(WsConnectContext ctx) {
+        ctx.session.setIdleTimeout(Duration.ofHours(1));
     }
 
     public void handleMessage(WsMessageContext ctx) {
@@ -51,12 +55,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(WsMessageContext ctx, UserGameCommand command) throws Exception {
         AuthData auth = dataAccess.getAuth(command.getAuthToken());
         if (auth == null) {
-            sendError(ctx.session, "invalid auth token");
+            sendError(ctx.session, "Error: invalid auth token");
             return;
         }
         GameData game = dataAccess.getGame(command.getGameID());
         if (game == null) {
-            sendError(ctx.session, "game not found");
+            sendError(ctx.session, "Error: game not found");
             return;
         }
 
@@ -92,14 +96,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         GameData gameData = dataAccess.getGame(command.getGameID());
         if (gameData == null) {
-            sendError(ctx.session, "game not found");
+            sendError(ctx.session, "Error: game not found");
             return;
         }
 
         ChessGame game = gameData.game();
 
         if (game.isGameOver()) {
-            sendError(ctx.session, "game already over");
+            sendError(ctx.session, "Error: game already over");
             return;
         }
 
@@ -108,7 +112,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 || (!isWhiteTurn && auth.username().equals(gameData.blackUsername()));
 
         if (!isCorrectPlayer) {
-            sendError(ctx.session, "it is not your turn");
+            sendError(ctx.session, "Error: it is not your turn");
             return;
         }
 
@@ -152,7 +156,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         // see connections above for reference
         AuthData auth = dataAccess.getAuth(command.getAuthToken());
         if (auth == null) {
-            sendError(ctx.session, "invalid auth token");
+            sendError(ctx.session, "Error: invalid auth token");
             return;
         }
         GameData game = dataAccess.getGame(command.getGameID());
@@ -180,24 +184,24 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void resign(WsMessageContext ctx, UserGameCommand command) throws Exception {
         AuthData auth = dataAccess.getAuth(command.getAuthToken());
         if (auth == null) {
-            sendError(ctx.session, "invalid auth token");
+            sendError(ctx.session, "Error: invalid auth token");
             return;
         }
         GameData gameData = dataAccess.getGame(command.getGameID());
         if (gameData == null) {
-            sendError(ctx.session, "game not found");
+            sendError(ctx.session, "Error: game not found");
             return;
         }
 
         boolean isPlayer = auth.username().equals(gameData.whiteUsername())
                 || auth.username().equals(gameData.blackUsername());
         if (!isPlayer) {
-            sendError(ctx.session, "observers cannot resign");
+            sendError(ctx.session, "Error: observers cannot resign");
             return;
         }
 
         if (gameData.game().isGameOver()) {
-            sendError(ctx.session, "game already over");
+            sendError(ctx.session, "Error: game already over");
             return;
         }
 

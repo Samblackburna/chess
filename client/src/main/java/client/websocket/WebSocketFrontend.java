@@ -26,6 +26,7 @@ import java.net.URI;
 public class WebSocketFrontend extends Endpoint {
 
     private final Session session;
+    private final WebSocketContainer container;
     private final ServerMessageHandler messageHandler;
     private static final Gson GSON = new Gson();
 
@@ -33,7 +34,7 @@ public class WebSocketFrontend extends Endpoint {
         this.messageHandler = messageHandler;
         URI uri = new
                 URI(serverUrl.replace("http", "ws") + "/ws");
-        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        this.container = ContainerProvider.getWebSocketContainer();
         this.session = container.connectToServer(this, uri);
         this.session.addMessageHandler(new MessageHandler.Whole<String>() {
 
