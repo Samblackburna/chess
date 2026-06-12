@@ -139,11 +139,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
 
         ChessGame.TeamColor nextTeam = game.getTeamTurn();
+        String nextUsername = nextTeam == ChessGame.TeamColor.WHITE
+                ? gameData.whiteUsername() : gameData.blackUsername();
         if (game.isInCheckmate(nextTeam)) {
             game.setGameOver(true);
             dataAccess.updateGame(gameData);
             connections.broadcast(command.getGameID(),
-                    GSON.toJson(new NotificationMessage(nextTeam + " is in checkmate. Game over!")));
+                    GSON.toJson(new NotificationMessage(nextUsername + " is in checkmate. Game over!")));
         } else if (game.isInStalemate(nextTeam)) {
             game.setGameOver(true);
             dataAccess.updateGame(gameData);
@@ -151,7 +153,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     GSON.toJson(new NotificationMessage("Stalemate. Game over!")));
         } else if (game.isInCheck(nextTeam)) {
             connections.broadcast(command.getGameID(),
-                    GSON.toJson(new NotificationMessage(nextTeam + " is in check!")));
+                    GSON.toJson(new NotificationMessage(nextUsername + " is in check!")));
         }
     }
 
