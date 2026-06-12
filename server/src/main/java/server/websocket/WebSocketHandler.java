@@ -33,10 +33,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     // I'm timing out, so we're trying this
+    @Override
     public void handleConnect(WsConnectContext ctx) {
         ctx.session.setIdleTimeout(Duration.ofHours(1));
     }
 
+    @Override
     public void handleMessage(WsMessageContext ctx) {
         try {
             UserGameCommand command = GSON.fromJson(ctx.message(), UserGameCommand.class);
@@ -49,6 +51,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         } catch (Exception e) {}
     }
 
+    @Override
     public void handleClose(WsCloseContext ctx) {
     }
 
